@@ -1,0 +1,33 @@
+data = LOAD 'stud_det.csv' using PigStorage(',') as (Name:chararray, ColUndertaken:chararray, Dob:chararray, Stream: chararray, Grade : float ,State : chararray, City : chararray);
+
+DEFINE myfilterparam (relvar,colvar,val) returns x
+{
+    $x = FILTER $relvar by $colvar == '$val';
+};
+
+--1. Find the number of students who scored less than 5(50%).
+
+FILTERDATA = FILTER data by Grade < 5;
+GRPALL = GROUP FILTERDATA all;
+LESSTHAN5 = FOREACH GRPALL GENERATE COUNT(FILTERDATA);
+DUMP LESSTHAN5 ;
+
+--2. List the name of students who are from Alaska.
+FILTERBYALASKA = myfilterparam(data, State, 'alaska');
+ALASSTUD = FOREACH FILTERBYALASKA  GENERATE Name;
+DUMP ALASSTUD ;
+
+--3. How many government collages are there in Alabama?
+
+FILTERBYALABAMA = myfilterparam(data, State, 'alabama');
+FILTERGOVTCOLL = myfilterparam(FILTERBYALABAMA , ColUndertaken, 'goverenment');
+GRP = GROUP FILTERGOVTCOLL all;
+NUMALABGOVTCOLL  = FOREACH GRP GENERATE COUNT(FILTERGOVTCOLL);
+DUMP NUMALABGOVTCOLL ;
+
+--4. List the name of students who are from Oregon and persuing BE.
+
+FILTEROREGON = myfilterparam(data, State, 'oregon');
+FILTERBYBE = myfilterparam(FILTEROREGON, Stream, 'BE');
+STUDNAME = FOREACH FILTERBYBE GENERATE Name;
+DUMP STUDNAME;
